@@ -10,6 +10,8 @@ It is python code that parses  and processes addresses. The processed addresses 
 
 - run the code with default arguments  with  : python3 main.py 
 
+- !!!! to run the code you need the location files that  you have to put at top level.  Ask Rémi or Paul for this files. 
+
 
 
 <h2> Tests </h2>
