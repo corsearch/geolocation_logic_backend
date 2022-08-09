@@ -21,7 +21,7 @@ It is python code that parses  and processes addresses. The processed addresses 
 
 - [to  microservice geolocation repo ](https://github.com/corsearch/service_geolocation)
 
-- [to the chassis repo chassis](https://github.com/CloudBats/fastapi-holistic/)
+- [to the chassis repo ](https://github.com/CloudBats/fastapi-holistic/)
 
 - [to LocationIQ  documentation ](https://github.com/location-iq/locationiq-python-client)
 
