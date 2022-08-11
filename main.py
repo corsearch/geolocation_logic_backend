@@ -1,10 +1,4 @@
 import time
-
-# from test_data import addresses
-# from geocode import Geocoder
- 
-
-from fake_data import addresses
 from geocode import Geocoder
 
 
