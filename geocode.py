@@ -13,7 +13,6 @@ import locationiq
 import pycountry
 from rtree import index
 import time
-
 # from .lib_platformX.utils import jaccard_similarity
 # from .lib_platformX.csv_utils import UnicodeFileObjectReader
 
@@ -37,7 +36,8 @@ class test:
         configuration = locationiq.Configuration()
         configuration.api_key["key"] = "pk.0b7e056b93083909c2b380f7a25bd278"
 
-        # Defining host is optional and default to https://eu1.locationiq.com/v1
+        # Defining host is optional and default to
+        # https://eu1.locationiq.com/v1
         configuration.host = "https://eu1.locationiq.com/v1"
         # Enter a context with an instance of the API client
         with locationiq.ApiClient(configuration) as api_client:
@@ -72,8 +72,10 @@ earth_radius = 6371000.0  # mean radius
 
 def distance(longlat1, longlat2):
     """
-    Calculates the distance between two longitude/latitude values using the Haversine formula
-    Note: longitude comes first in each coordinate pair, to follow x/y conventions
+    Calculates the distance between two longitude/latitude values using the 
+    Haversine formula
+    Note: longitude comes first in each coordinate pair, to follow x/y 
+    conventions
     :param longlat1: the first longitude/latitude value
     :param longlat2: the second longitude/latitude value
     :return: the distance in metres
@@ -194,7 +196,8 @@ class Geocoder:
     @classmethod
     def geocode(
         cls,
-        address="World of books limited 4281 express ln suite 13647 Sarasota Florida 34238 US",
+        address=("World of books limited 4281 express ln suite" +
+                 "13647 Sarasota Florida 34238 US"),
         sort_by="address",
         min_similarity=0.6,
         max_addresses=1,
@@ -235,130 +238,125 @@ class Geocoder:
             #     kwargs["bounded"] = 1
             results = []
 
-            def post_reponse( response: list()):
-                    for entry in response:
-                        location = {
+            def post_reponse(response: list()):
+                for entry in response:
+                    location = {
+                        "address": {
+                            attr: matched_address[attr]["value"]
+                            for attr in cls.match_components_response_order
+                        },
+                        "formatted_address": ", ".join(
+                            [
+                                matched_address[component]["value"]
+                                for component in cls.match_components_response_order
+                                if matched_address[component]["value"]
+                                and component not in exclude_components
+                            ]
+                        ),
+                        "osm": {
+                            "details": {
+                                attr: getattr(
+                                    entry, cls.osm_location_attributes[attr])
+                                for attr in cls.osm_location_attributes
+                            },
                             "address": {
-                                attr: matched_address[attr]["value"]
-                                for attr in cls.match_components_response_order
+                                attr: getattr(entry.address, attr)
+                                for attr in cls.osm_address_attributes
                             },
-                            "formatted_address": ", ".join(
-                                [
-                                    matched_address[component]["value"]
-                                    for component in cls.match_components_response_order
-                                    if matched_address[component]["value"]
-                                    and component not in exclude_components
-                                ]
-                            ),
-                            "osm": {
-                                "details": {
-                                    attr: getattr(entry, cls.osm_location_attributes[attr])
-                                    for attr in cls.osm_location_attributes
-                                },
-                                "address": {
-                                    attr: getattr(entry.address, attr)
-                                    for attr in cls.osm_address_attributes
-                                },
-                                # "name": entry.namedetails.name
-                                # if entry.namedetails
-                                # else None,
-                                # "match_quality": {
-                                #     attr: getattr(entry.matchquality, attr)
-                                #     for attr in cls.matchquality_attributes if entry.matchquality is not None
-                                # },
-                            },
-                            "validation": {},
-                        }
-                        if bbox and entry.lat and entry.lon:
-                            bbox_centroid = (
-                                (bbox[0] + bbox[2]) / 2.0,
-                                (bbox[1] + bbox[3]) / 2.0,
-                            )
-                            location["validation"]["distance"] = distance(
-                                (float(entry.lon), float(entry.lat)), bbox_centroid
-                            )
-                        else:
-                            location["validation"]["distance"] = float("inf")
-                        location["validation"]["address_match_level"] = ""
-                        for component in reversed(cls.match_components):
-                            input_value = matched_address[component]["value"]
-                            if input_value:
-                                for match_field in cls.match_components[component]:
-                                    match_field_value = getattr(entry.address, match_field)
-                                    if match_field_value:
-                                        if (
-                                            jaccard_similarity(
-                                                input_value.lower(),
-                                                match_field_value.lower(),
-                                            )
-                                            >= min_similarity
-                                        ):
-                                            location["validation"][
-                                                "address_match_level"
-                                            ] = match_field
-                                        else:
-                                            # break
-                                            pass
-                        results.append(location)
-                    if sort_by == "distance":
-                        results.sort(
-                            key=lambda x: (
-                                -x["validation"]["distance"],
-                                x["validation"]["address_match_level"],
-                            )
+                        },
+                        "validation": {},
+                    }
+                    if bbox and entry.lat and entry.lon:
+                        bbox_centroid = (
+                            (bbox[0] + bbox[2]) / 2.0,
+                            (bbox[1] + bbox[3]) / 2.0,
+                        )
+                        location["validation"]["distance"] = distance(
+                            (float(entry.lon), float(entry.lat)), bbox_centroid
                         )
                     else:
-                        results.sort(
-                            key=lambda x: (
-                                x["validation"]["address_match_level"],
-                                -x["validation"]["distance"],
-                            )
+                        location["validation"]["distance"] = float("inf")
+                    location["validation"]["address_match_level"] = ""
+                    for component in reversed(cls.match_components):
+                        input_value = matched_address[component]["value"]
+                        if input_value:
+                            for match_field in cls.match_components[component]:
+                                match_field_value = getattr(
+                                    entry.address, match_field)
+                                if match_field_value:
+                                    if (
+                                        jaccard_similarity(
+                                            input_value.lower(),
+                                            match_field_value.lower(),
+                                        )
+                                        >= min_similarity
+                                    ):
+                                        location["validation"][
+                                            "address_match_level"
+                                        ] = match_field
+                                    else:
+                                        # break
+                                        pass
+                    results.append(location)
+                if sort_by == "distance":
+                    results.sort(
+                        key=lambda x: (
+                            -x["validation"]["distance"],
+                            x["validation"]["address_match_level"],
                         )
+                    )
+                else:
+                    results.sort(
+                        key=lambda x: (
+                            x["validation"]["address_match_level"],
+                            -x["validation"]["distance"],
+                        )
+                    )
 
-                    return results[: min(len(results), max_addresses)]
+                return results[: min(len(results), max_addresses)]
+
         try:
-                response = api_instance.search(**kwargs)
-                return post_reponse(response)
+            response = api_instance.search(**kwargs)
+            return post_reponse(response)
 
         except locationiq.exceptions.ApiException as e:
-                if e.body == '{"error":"Unable to geocode"}':
+            if e.body == '{"error":"Unable to geocode"}':
 
-                    # clean duplicate in street data
-                    street_candidate = matched_address["street"]["value"]
-                    street_candidate = list(dict.fromkeys(matched_address["street"]["value"].split()))
-                    street_candidate = street_candidate
-    
-                    for token in range(len(street_candidate)):
-                     
-                        time.sleep(1)  # be gentle with the server
-                       
-                        # update adress with one word less
-                        street_candidate =  street_candidate[1:]
-                        matched_address["street"]["value"] = " ".join(street_candidate)
-                        
-                        # address construct
-                        candidate_streeet = ", ".join(
-                                                    [
-                                                        matched_address[component]["value"]
-                                                        for component in cls.match_components
-                                                        if matched_address[component]["value"]
-                                                    ])
+                # clean duplicate in street data
+                street_candidate = matched_address["street"]["value"]
+                street_candidate = list(
+                    dict.fromkeys(matched_address["street"]["value"].split())
+                )
+                street_candidate = street_candidate
 
-  
-                        kwargs.update({"q": candidate_streeet}) 
-                        # print(kwargs)
-                        try:
-                            response = api_instance.search(**kwargs)
-                            break
-                            
-                        except:
-                            pass
-        
+                for token in range(len(street_candidate)):
+
+                    time.sleep(1)  # be gentle with the server
+
+                    # update adress with one word less
+                    street_candidate = street_candidate[1:]
+                    matched_address["street"]["value"] = " ".join(
+                        street_candidate)
+
+                    # address construct
+                    candidate_streeet = ", ".join(
+                        [
+                            matched_address[component]["value"]
+                            for component in cls.match_components
+                            if matched_address[component]["value"]
+                        ]
+                    )
+
+                    kwargs.update({"q": candidate_streeet})
+                    # print(kwargs)
+                    try:
+                        response = api_instance.search(**kwargs)
+                        break
+
+                    except BaseException:
+                        pass
+
         return post_reponse(response)
-
-   
-
-
 
 
 class GeoData:
@@ -420,7 +418,8 @@ class GeoData:
                     "country_codes": {subdivision.country_code},
                 }
             else:
-                regions[region_lower]["country_codes"].add(subdivision.country_code)
+                regions[region_lower]["country_codes"].add(
+                    subdivision.country_code)
         return regions
 
     @staticmethod
@@ -434,14 +433,15 @@ class GeoData:
                 for (admin_code, name, level) in UnicodeFileObjectReader(
                     csv_in, delimiter="\t"
                 ):
-                    admin_codes[admin_code] = {"name": name, "level": int(level)}
+                    admin_codes[admin_code] = {
+                        "name": name, "level": int(level)}
                 return admin_codes
 
     @staticmethod
     @lru_cache(maxsize=10)
     def get_postal_code_regexes_data(_day):
-        postal_code_regexes_file = os.path.join(*data_path, "postal_code_regexes.zip")
-        # postal_code_regexes_file = os.path.join("location_files", "postal_code_regexes.zip")
+        postal_code_regexes_file = os.path.join(
+            *data_path, "postal_code_regexes.zip")
         with ZipFile(postal_code_regexes_file) as zip_in:
             with zip_in.open(zip_in.namelist()[0], "r") as csv_in:
                 postal_code_regexes = {}
@@ -458,17 +458,21 @@ class GeoData:
         if os.path.exists(pickle_file_path):
             with open(pickle_file_path, "rb") as pickle_file:
                 postal_code_data = pickle.load(pickle_file)
-                rtree_index = index.Index(os.path.join(*data_path, "rtree_index.idx"))
+                rtree_index = index.Index(
+                    os.path.join(*data_path, "rtree_index.idx"))
                 return (
                     postal_code_data["postal_codes"],
                     postal_code_data["bounding_boxes"],
                     rtree_index,
                     postal_code_data["postal_code_ids"],
                 )
-        # If there is no pickle file, the source zip files will need to be processed, but this will be slow
+
+        # If there is no pickle file, the source zip files will need to be
+        # processed, but this will be slow
         bounding_boxes = defaultdict(dict)
         # rtree_index = index.Index(
-        #     os.path.join("app", "geoloc_logic", "location_files", "rtree_index.idx")
+        # os.path.join("app", "geoloc_logic",
+        # "location_files", "rtree_index.idx")
         # )
         rtree_index = index.Index(os.path.join(*data_path, "rtree_index.idx"))
         postal_codes_files = [
@@ -478,7 +482,8 @@ class GeoData:
             # os.path.join("location_files", 'GB_postal_codes.zip'),
             # os.path.join("location_files", 'NL_postal_codes.zip')
         ]
-        postal_code_ids = {"forward": defaultdict(dict), "reverse": defaultdict(dict)}
+        postal_code_ids = {"forward": defaultdict(
+            dict), "reverse": defaultdict(dict)}
         postal_codes = {}
         for postal_codes_file in postal_codes_files:
             with ZipFile(postal_codes_file) as zip_in:
@@ -522,7 +527,8 @@ class GeoData:
                                 }
                             )
         for country_code, postal_code_data in postal_codes.items():
-            for i, (postal_code, records) in enumerate(postal_code_data.items()):
+            for i, (postal_code, records) in enumerate(
+                    postal_code_data.items()):
                 min_lat = min([record["latitude"] for record in records])
                 max_lat = max([record["latitude"] for record in records])
                 min_long = min([record["longitude"] for record in records])
@@ -573,8 +579,10 @@ class GeoData:
                     population,
                 ) in UnicodeFileObjectReader(csv_in, delimiter="\t"):
                     name_lower = unidecode(
-                        "".join(re.split(Geocoder.place_delimiters, name.lower()))
-                    )
+                        "".join(
+                            re.split(
+                                Geocoder.place_delimiters,
+                                name.lower())))
                     places[name_lower].append(
                         {
                             "geoname_id": geonameid,
@@ -695,7 +703,8 @@ class AddressMatcher:
             return None
         if candidate in GeoData.get_country_data(date.today()):
             return candidate
-        # US states and Canadian provinces do not have overlapping codes so it is safe to treat them in sequence
+        # US states and Canadian provinces do not have overlapping codes so it
+        # is safe to treat them in sequence
         us_state = self.match_us_state_code(candidate)
         if us_state:
             self.address["region"]["value"] = us_state
@@ -707,7 +716,8 @@ class AddressMatcher:
 
     @classmethod
     def match_country(cls, candidate, **kwargs):
-        match = GeoData.get_country_names_data(date.today()).get(candidate.lower())
+        match = GeoData.get_country_names_data(
+            date.today()).get(candidate.lower())
         if match:
             return match["country"]
 
@@ -727,12 +737,13 @@ class AddressMatcher:
         try:
             state = us.states.lookup(candidate.upper())
             return state.name
-        except:
+        except BaseException:
             return None
 
     @staticmethod
     def match_canadian_province_code(candidate):
-        # Yukon, Northwest Territories and Nunavut are actually territories rather than provinces, but will be handled
+        # Yukon, Northwest Territories and Nunavut are actually territories
+        # rather than provinces, but will be handled
         # in the same manner
         canadian_codes = {
             "NL": "Newfoundland and Labrador",
@@ -760,7 +771,8 @@ class AddressMatcher:
     def match_postal_code(self, candidate, **kwargs):
         country_code = self.address["country_code"]["value"]
         if country_code:
-            regex = GeoData.get_postal_code_regexes_data(date.today()).get(country_code)
+            regex = GeoData.get_postal_code_regexes_data(
+                date.today()).get(country_code)
             if regex:
                 match = re.match(regex, candidate.upper())
                 if match:
@@ -768,13 +780,15 @@ class AddressMatcher:
 
     def match_place(self, candidate, **kwargs):
         if self.address[kwargs["element"]]["value"]:
-            # The place may already have been matched, e.g. in case of ambiguity between country and US state codes
+            # The place may already have been matched, e.g. in case of
+            # ambiguity between country and US state codes
             return
         town_city_range = self.address["town_city"]["indexes"]
         if town_city_range and set(range(*kwargs["token_range"])) & set(
             range(*town_city_range)
         ):
-            # Don't attempt to use a candidate that is part of an already matched town/city
+            # Don't attempt to use a candidate that is part of an already
+            # matched town/city
             return
         matches = GeoData.get_places_data(date.today()).get(
             unidecode(
@@ -788,7 +802,8 @@ class AddressMatcher:
                 )
             )
         )
-        # Remove anything that's already been matched to a region or to a town/city
+        # Remove anything that's already been matched to a region or to a
+        # town/city
         if matches:
             matches = [
                 match
@@ -822,7 +837,8 @@ class AddressMatcher:
                         and m["admin1_code"] == country_code
                     ]
                 matches = country_matches + state_matches + province_matches
-            matches = sorted(matches, key=lambda x: int(x["population"]), reverse=True)
+            matches = sorted(matches, key=lambda x: int(
+                x["population"]), reverse=True)
             if matches:
                 match = matches[0]
                 self.latitude = match["latitude"]
@@ -840,7 +856,8 @@ class AddressMatcher:
                         if match["country_code"] in ["GB", "GR"]
                         else ".".join([match["country_code"], match["admin1_code"]])
                     )
-                    region = GeoData.get_admin_codes_data(date.today()).get(admin_code)
+                    region = GeoData.get_admin_codes_data(
+                        date.today()).get(admin_code)
                     if region:
                         self.address["region"]["value"] = region["name"]
                 return match["name"]
@@ -855,10 +872,12 @@ class AddressMatcher:
                 candidate = " ".join(self.address_tokens[j:i])
                 kwargs["token_range"] = (j, i)
                 # Special handling: only look for a country code in the last token as otherwise abbreviations such
-                # as ST (Street) and CL (Close) will be wrongly considered as countries (São Tomé and Príncipe, Chile)
+                # as ST (Street) and CL (Close) will be wrongly considered as
+                # countries (São Tomé and Príncipe, Chile)
                 if element == "country_code" and candidate != self.address_tokens[-1]:
                     continue
-                # Special handling: if town_city has already been found, village_suburb must be immediately adjacent
+                # Special handling: if town_city has already been found,
+                # village_suburb must be immediately adjacent
                 if (
                     element == "village_suburb"
                     and self.address["town_city"]["value"]
@@ -896,7 +915,8 @@ class AddressMatcher:
                 ]
             )
             if (
-                country != GeoData.get_country_data(date.today()).get(country_code)
+                country != GeoData.get_country_data(
+                    date.today()).get(country_code)
             ) or (country and country_code_indexes[1] < max_index):
                 self.address["country"]["value"] = None
                 self.address["country"]["indexes"] = []
@@ -936,7 +956,8 @@ class AddressMatcher:
                 (min_long + max_long) / 2.0,
                 (min_lat + max_lat) / 2.0,
             )
-            min_distance = min(min_distance, distance(centroid, candidate_centroid))
+            min_distance = min(min_distance, distance(
+                centroid, candidate_centroid))
         offset = max(min_distance, min_offset)
         long_offset = round(
             offset / (111111.0 * math.cos(math.radians(centroid[1]))), 7
@@ -977,12 +998,12 @@ class AddressMatcher:
         if check_region and not country and not country_code:
             region = self.address["region"]["value"]
             if region:
-                self.address["country_code"]["value"] = self.country_from_region(region)
+                self.address["country_code"]["value"] = self.country_from_region(
+                    region)
                 country_code = self.address["country_code"]["value"]
         if country and not country_code:
             self.address["country_code"]["value"] = GeoData.get_country_names_data(
-                date.today()
-            ).get(country.lower())["code"]
+                date.today()).get(country.lower())["code"]
         elif country_code and not country:
             # self.match_from_elements('place')
             # The country code may have changed, so get it again
@@ -997,7 +1018,13 @@ class AddressMatcher:
         for element1, element2 in combinations(self.address, 2):
             indexes1 = self.address[element1]["indexes"]
             indexes2 = self.address[element2]["indexes"]
-            if indexes1 and indexes2 and set(range(*indexes1)) & set(range(*indexes2)):
+            if indexes1 and indexes2 and set(
+                range(
+                    *
+                    indexes1)) & set(
+                range(
+                    *
+                    indexes2)):
                 valid = False
         return valid
 
@@ -1015,9 +1042,8 @@ class AddressMatcher:
             for token in self.unparsed_tokens
             if self.unparsed_tokens.index(token) not in parsed_indexes
         ]
-        parsed_indexes = [
-            value["indexes"][0] for value in self.address.values() if value["indexes"]
-        ]
+        parsed_indexes = [value["indexes"][0]
+                          for value in self.address.values() if value["indexes"]]
         if parsed_indexes and min(parsed_indexes) > 0:
             street_tokens = self.unparsed_tokens[: min(parsed_indexes)]
             street_candidate = " ".join(
@@ -1032,7 +1058,8 @@ class AddressMatcher:
     def match_building_indicators(self):
         if not self.address["street"]["value"]:
             return
-        street_tokens = re.split(Geocoder.delimiters, self.address["street"]["value"])
+        street_tokens = re.split(
+            Geocoder.delimiters, self.address["street"]["value"])
         indicator_entries = set()
         for i, token in enumerate(street_tokens):
             for indicator_name, indicator in self.building_indicators.items():
@@ -1046,7 +1073,8 @@ class AddressMatcher:
                             del street_tokens[: i + 1]
                         else:
                             building_name = (
-                                " ".join([indicator_name, street_tokens[i + offset]])
+                                " ".join(
+                                    [indicator_name, street_tokens[i + offset]])
                                 if offset > 0
                                 else " ".join(
                                     [street_tokens[i + offset], indicator_name]
@@ -1054,9 +1082,9 @@ class AddressMatcher:
                             )
                             indicator_entries.add(building_name)
                             if offset > 0:
-                                del street_tokens[i : i + offset + 1]
+                                del street_tokens[i: i + offset + 1]
                             else:
-                                del street_tokens[i + offset : i + 1]
+                                del street_tokens[i + offset: i + 1]
                     elif not indicator["full_word"] and word in token.lower():
                         remainder = token.replace(word, "")
                         building_name = (
@@ -1074,14 +1102,16 @@ class AddressMatcher:
     def match_company_indicators(self):
         if not self.address["street"]["value"]:
             return
-        street_tokens = re.split(Geocoder.delimiters, self.address["street"]["value"])
+        street_tokens = re.split(
+            Geocoder.delimiters, self.address["street"]["value"])
         indicator_entries = set()
         for i, token in enumerate(street_tokens):
             for indicator_name, indicator in self.company_indicators.items():
                 for word in indicator["words"]:
                     if word == token.lower():
                         indicator_entries.add(
-                            " ".join([" ".join(street_tokens[:i]), indicator_name])
+                            " ".join(
+                                [" ".join(street_tokens[:i]), indicator_name])
                         )
                         del street_tokens[: i + 1]
         self.address["street"]["value"] = " ".join(street_tokens)
