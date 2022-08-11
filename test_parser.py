@@ -5,7 +5,8 @@ from fake_data  import addresses
 
 
 
-def test_content_reponse():
+def test_content_parser():
+    """"  LocationIQ is used but just the result of the parser is  tested """
 
     for add in addresses : 
 
@@ -16,6 +17,4 @@ def test_content_reponse():
       assert  result[0]["address"]["company"] == add["Company"]
 
           
-
-
 
