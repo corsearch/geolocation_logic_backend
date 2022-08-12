@@ -1,9 +1,12 @@
 """
 Utilities to handle reading and writing of Unicode data from and to CSV files
-UTF8Recoder: iterator that reads an encoded stream and reencodes the input to UTF-8
-UnicodeReader: a CSV reader which will iterate over lines in the specified CSV file
+UTF8Recoder: iterator that reads an encoded stream and reencodes the input
+to UTF-8
+UnicodeReader: a CSV reader which will iterate over lines in the specified CSV
+file
 UnicodeWriter: a CSV writer which will write rows to the specified CSV file
-All these utilities, plus relevant comments, are taken verbatim from https://docs.python.org/2/library/csv.html, with
+All these utilities, plus relevant comments, are taken verbatim from
+https://docs.python.org/2/library/csv.html, with
 some minor tweaks.
 """
 import codecs
@@ -11,8 +14,10 @@ from io import StringIO
 from defusedcsv import csv
 
 
-# For all other encodings the following UnicodeReader and UnicodeWriter classes can be used. They take an additional
-# encoding parameter in their constructor and make sure that the data passes the real reader or writer encoded as UTF-8
+# For all other encodings the following UnicodeReader and UnicodeWriter
+# classes can be used. They take an additional
+# encoding parameter in their constructor and make sure that the data passes
+# the real reader or writer encoded as UTF-8
 
 
 class UTF8Recoder(object):
@@ -31,8 +36,10 @@ class UTF8Recoder(object):
 
     def __next__(self):
         """
-        Once executed in PY3 this will be called and next() will be ignored as next() has been renamed to __next__()
-        Since we will be running the update to PY and to avoid breaking everything, this was already added to the class
+        Once executed in PY3 this will be called and next() will be ignored as
+        next() has been renamed to __next__()
+        Since we will be running the update to PY and to avoid breaking
+        everything, this was already added to the class
         """
         return self.reader.__next__()
 
@@ -53,8 +60,10 @@ class UnicodeFileObjectReader(object):
 
     def __next__(self):
         """
-        Once executed in PY3 this will be called and next() will be ignored as next() has been renamed to __next__()
-        Since we will be running the update to PY and to avoid breaking everything, this was already added to the class
+        Once executed in PY3 this will be called and next() will be ignored as
+        next() has been renamed to __next__()
+        Since we will be running the update to PY and to avoid breaking
+        everything, this was already added to the class
         """
         return self.reader.__next__()
 
@@ -64,7 +73,8 @@ class UnicodeFileObjectReader(object):
 
 class UnicodeFileObjectWriter(object):
     """
-    A CSV writer which will write rows to CSV file "f", which is encoded in the given encoding.
+    A CSV writer which will write rows to CSV file "f", which is encoded in
+    the given encoding.
     """
 
     def __init__(self, f, dialect=csv.excel, encoding='utf-8', **kwargs):
@@ -76,7 +86,8 @@ class UnicodeFileObjectWriter(object):
 
     def writerow(self, row):
         # Updated wrt original: added test for empty input
-        self.writer.writerow([s.encode('utf-8') if s is not None else '' for s in row])
+        self.writer.writerow(
+            [s.encode('utf-8') if s is not None else '' for s in row])
         # Fetch UTF-8 output from the queue ...
         data = self.queue.getvalue()
         data = data.decode('utf-8')
@@ -94,10 +105,12 @@ class UnicodeFileObjectWriter(object):
 
 class UnicodeReader:
     """
-    CSV reader supporting Unicode that will work for both Python 2 and Python 3.
+    CSV reader supporting Unicode that will work for both Python 2 and Python
+    3.
     Note: will only work if used as a context manager.
     Taken from http://python3porting.com/problems.html
     """
+
     def __init__(self, filename, dialect=csv.excel, encoding='utf-8', **kw):
         self.filename = filename
         self.dialect = dialect
@@ -123,10 +136,12 @@ class UnicodeReader:
 
 class UnicodeWriter:
     """
-    CSV writer supporting Unicode that will work for both Python 2 and Python 3.
+    CSV writer supporting Unicode that will work for both Python 2 and
+    Python 3.
     Note: will only work if used as a context manager.
     Taken from http://python3porting.com/problems.html
     """
+
     def __init__(self, filename, dialect=csv.excel, encoding='utf-8', **kw):
         self.filename = filename
         self.dialect = dialect

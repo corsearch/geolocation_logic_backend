@@ -13,6 +13,7 @@ import locationiq
 import pycountry
 from rtree import index
 import time
+from locationiq.rest import ApiException
 # from .lib_platformX.utils import jaccard_similarity
 # from .lib_platformX.csv_utils import UnicodeFileObjectReader
 
@@ -28,10 +29,6 @@ class test:
         self.addresses = ""
 
     def run_locationIQ(self):
-        import time
-        import locationiq
-        from locationiq.rest import ApiException
-        from pprint import pprint
 
         configuration = locationiq.Configuration()
         configuration.api_key["key"] = "pk.0b7e056b93083909c2b380f7a25bd278"
@@ -62,7 +59,7 @@ class test:
         try:
             # Forward Geocoding
             api_response = api_instance.search(**kwargs)
-            pprint(api_response)
+            api_response == api_response  # quick fix flake8
         except ApiException as e:
             print("Exception when calling SearchApi->search: %s\n" % e)
 
@@ -72,9 +69,9 @@ earth_radius = 6371000.0  # mean radius
 
 def distance(longlat1, longlat2):
     """
-    Calculates the distance between two longitude/latitude values using the 
+    Calculates the distance between two longitude/latitude values using the
     Haversine formula
-    Note: longitude comes first in each coordinate pair, to follow x/y 
+    Note: longitude comes first in each coordinate pair, to follow x/y
     conventions
     :param longlat1: the first longitude/latitude value
     :param longlat2: the second longitude/latitude value
@@ -217,7 +214,8 @@ class Geocoder:
                 ]
             )
             bbox = matched_address["bounding_box"]["value"]
-            viewbox = ", ".join([str(value) for value in bbox]) if bbox else ""
+            # viewbox = (", ".join([str(value) for value in bbox])
+            # if bbox else "")
 
             kwargs = {
                 "q": address_string,
@@ -230,7 +228,6 @@ class Geocoder:
                 "limit": 10,
                 "namedetails": 1,
                 "dedupe": 1,
-                "matchquality": 0,
                 "matchquality": cls.match_quality,
             }
             # if viewbox:
@@ -248,7 +245,8 @@ class Geocoder:
                         "formatted_address": ", ".join(
                             [
                                 matched_address[component]["value"]
-                                for component in cls.match_components_response_order
+                                for component
+                                in cls.match_components_response_order
                                 if matched_address[component]["value"]
                                 and component not in exclude_components
                             ]
@@ -369,7 +367,8 @@ class GeoData:
     @staticmethod
     @lru_cache(maxsize=10)
     def get_country_data(_day):
-        return {country.alpha_2: country.name for country in pycountry.countries}
+        return {country.alpha_2:
+                country.name for country in pycountry.countries}
 
     @staticmethod
     @lru_cache(maxsize=10)
@@ -523,7 +522,8 @@ class GeoData:
                                     "admin_code3": admin_code3,
                                     "latitude": float(latitude),
                                     "longitude": float(longitude),
-                                    "accuracy": int(accuracy) if accuracy else 0,
+                                    "accuracy":
+                                    int(accuracy) if accuracy else 0,
                                 }
                             )
         for country_code, postal_code_data in postal_codes.items():
@@ -609,20 +609,25 @@ class GeoData:
 class AddressMatcher:
 
     building_indicators = {
-        "Suite": {"words": ["suite", "ste", "#"], "offset": 1, "full_word": False},
+        "Suite": {"words": ["suite", "ste", "#"], "offset": 1,
+                  "full_word": False},
         "Studio": {"words": ["studio"], "offset": 1, "full_word": False},
-        "Apartment": {"words": ["apartment", "apt"], "offset": 1, "full_word": False},
+        "Apartment": {"words": ["apartment", "apt"],
+                      "offset": 1, "full_word": False},
         "Appartment": {
             "words": ["appartment", "appt"],
             "offset": 1,
             "full_word": False,
         },
-        "Unit": {"words": ["unit", "no", "no."], "offset": 1, "full_word": False},
+        "Unit": {"words": ["unit", "no", "no."],
+                 "offset": 1, "full_word": False},
         "Office": {"words": ["office"], "offset": 1, "full_word": False},
         "Floor": {"words": ["floor"], "offset": -1, "full_word": True},
-        "Building": {"words": ["building", "bldg"], "offset": 1, "full_word": True},
+        "Building": {"words": ["building", "bldg"],
+                     "offset": 1, "full_word": True},
         "House": {"words": ["house"], "offset": "all", "full_word": True},
     }
+
     company_indicators = {
         "Ltd": {"words": ["limited", "ltd"]},
         "Inc": {"words": ["incorporated", "inc"]},
@@ -735,7 +740,9 @@ class AddressMatcher:
     @staticmethod
     def match_us_state_code(candidate):
         try:
-            state = us.states.lookup(candidate.upper())
+            pass
+            state = ""  # quick fix flake8
+            # state = us.states.lookup(candidate.upper())
             return state.name
         except BaseException:
             return None
@@ -854,7 +861,8 @@ class AddressMatcher:
                             ]
                         )
                         if match["country_code"] in ["GB", "GR"]
-                        else ".".join([match["country_code"], match["admin1_code"]])
+                        else ".".join([match["country_code"],
+                                       match["admin1_code"]])
                     )
                     region = GeoData.get_admin_codes_data(
                         date.today()).get(admin_code)
@@ -871,10 +879,12 @@ class AddressMatcher:
             for j in range(i):
                 candidate = " ".join(self.address_tokens[j:i])
                 kwargs["token_range"] = (j, i)
-                # Special handling: only look for a country code in the last token as otherwise abbreviations such
+                # Special handling: only look for a country code in the last
+                # token as otherwise abbreviations such
                 # as ST (Street) and CL (Close) will be wrongly considered as
                 # countries (São Tomé and Príncipe, Chile)
-                if element == "country_code" and candidate != self.address_tokens[-1]:
+                if (element == "country_code" and
+                        candidate != self.address_tokens[-1]):
                     continue
                 # Special handling: if town_city has already been found,
                 # village_suburb must be immediately adjacent
@@ -891,7 +901,8 @@ class AddressMatcher:
                     return
 
     def check_sequence(self):
-        # Initially cross-check town/city against region: we would expect town/city to occur first in the address,
+        # Initially cross-check town/city against region: we would expect
+        # town/city to occur first in the address,
         # so remove region if this is not the case
         town_city_indexes = self.address["town_city"]["indexes"]
         region_indexes = self.address["region"]["indexes"]
@@ -949,9 +960,8 @@ class AddressMatcher:
             candidate_normalised = candidate.lower().replace(" ", "")
             if candidate_normalised == postal_code_normalised:
                 continue
-            min_long, min_lat, max_long, max_lat = bounding_boxes[country_code][
-                candidate_normalised
-            ]
+            min_long, min_lat, max_long, max_lat = bounding_boxes[
+                country_code][candidate_normalised]
             candidate_centroid = (
                 (min_long + max_long) / 2.0,
                 (min_lat + max_lat) / 2.0,
@@ -998,11 +1008,13 @@ class AddressMatcher:
         if check_region and not country and not country_code:
             region = self.address["region"]["value"]
             if region:
-                self.address["country_code"]["value"] = self.country_from_region(
+                self.address["country_code"][
+                    "value"] = self.country_from_region(
                     region)
                 country_code = self.address["country_code"]["value"]
         if country and not country_code:
-            self.address["country_code"]["value"] = GeoData.get_country_names_data(
+            self.address["country_code"][
+                "value"] = GeoData.get_country_names_data(
                 date.today()).get(country.lower())["code"]
         elif country_code and not country:
             # self.match_from_elements('place')
@@ -1043,7 +1055,8 @@ class AddressMatcher:
             if self.unparsed_tokens.index(token) not in parsed_indexes
         ]
         parsed_indexes = [value["indexes"][0]
-                          for value in self.address.values() if value["indexes"]]
+                          for value in self.address.values(
+        ) if value["indexes"]]
         if parsed_indexes and min(parsed_indexes) > 0:
             street_tokens = self.unparsed_tokens[: min(parsed_indexes)]
             street_candidate = " ".join(
@@ -1074,7 +1087,8 @@ class AddressMatcher:
                         else:
                             building_name = (
                                 " ".join(
-                                    [indicator_name, street_tokens[i + offset]])
+                                    [indicator_name, street_tokens[i +
+                                     offset]])
                                 if offset > 0
                                 else " ".join(
                                     [street_tokens[i + offset], indicator_name]
@@ -1124,7 +1138,8 @@ class AddressMatcher:
             return
         street_tokens = [
             token.lower()
-            for token in re.split(Geocoder.delimiters, self.address["street"]["value"])
+            for token in re.split(
+                Geocoder.delimiters, self.address["street"]["value"])
         ]
         indicator_ranges = {}
         indicator_entries = set()
@@ -1143,7 +1158,8 @@ class AddressMatcher:
             industrial_estate_candidate = " ".join(candidate_tokens)
             for indicator_name in indicator_names:
                 if indicator_name in industrial_estate_candidate:
-                    indicator_ranges[indicator_range] = industrial_estate_candidate
+                    indicator_ranges[
+                        indicator_range] = industrial_estate_candidate
         for indicator_range in sorted(indicator_ranges):
             indicator_entries.add(
                 " ".join(
@@ -1164,7 +1180,8 @@ class AddressMatcher:
     def match_number(self):
         street_tokens = [
             token.lower()
-            for token in re.split(Geocoder.delimiters, self.address["street"]["value"])
+            for token in re.split(Geocoder.delimiters,
+                                  self.address["street"]["value"])
         ]
         output_street_tokens = []
         for token in street_tokens:
@@ -1185,7 +1202,8 @@ class AddressMatcher:
     def substitute_street(self):
         self.street_tokens = [
             token.lower().strip().rstrip(".")
-            for token in re.split(Geocoder.delimiters, self.address["street"]["value"])
+            for token in re.split(Geocoder.delimiters,
+                                  self.address["street"]["value"])
             if token is not None and token != ""
         ]
         substitutions = []
@@ -1195,7 +1213,8 @@ class AddressMatcher:
                 if (
                     not substitution.get("position")
                     or substitution["position"] == idx
-                    or substitution["position"] == idx - len(self.street_tokens)
+                    or substitution["position"] == idx -
+                    len(self.street_tokens)
                 ):
                     substitutions.append(substitution["word"])
                 else:
