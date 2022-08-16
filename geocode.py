@@ -13,7 +13,7 @@ import locationiq
 import pycountry
 from rtree import index
 import time
-from locationiq.rest import ApiException
+# from locationiq.rest import ApiException
 # from .lib_platformX.utils import jaccard_similarity
 # from .lib_platformX.csv_utils import UnicodeFileObjectReader
 
@@ -42,6 +42,7 @@ def distance(longlat1, longlat2):
         math.sin(delta_phi / 2.0) ** 2
         + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2.0) ** 2
     )
+    earth_radius = 6371000.0  # mean radius
     return round(2 * earth_radius * math.asin(math.sqrt(a)), 3)
 
 
