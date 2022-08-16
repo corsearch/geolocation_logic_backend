@@ -6,4 +6,3 @@ zipfile36
 pickle5
 defusedcsv
 ptvsd
-pickle5
