@@ -1,8 +1,0 @@
-git+https://github.com/location-iq/locationiq-python-client.git
-pycountry
-Unidecode
-Rtree
-zipfile36
-pickle5
-defusedcsv
-ptvsd
