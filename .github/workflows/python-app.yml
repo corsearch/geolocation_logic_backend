@@ -21,19 +21,13 @@ jobs:
         cache: 'pip' # caching pip dependencies
     - name:  Some fun stuff
       run : echo "### Hello world! :rocket:" >> $GITHUB_STEP_SUMMARY
-
     - name: Install dependencies
       run: |
         cd
         $(pwd)
-   
-
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install -r requirements.txt
-
-
     - name: Lint with flake8
       run: |
         $(pwd)
