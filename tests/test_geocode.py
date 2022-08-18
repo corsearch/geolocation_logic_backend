@@ -13,7 +13,7 @@ test_address = ("Andreas Bünnecke Dreimorgenstück 11 Weilburg Hessen 35781 DE"
                 )
 
 
-def test_all_adress_pass():
+def test_geocode():
     data = []
     for address in test_address:
 
