@@ -207,7 +207,7 @@ Pipfile.lock
 ### Build system
 
 # Poetry
-/requirements.txt
+#/requirements.txt
 
 
 ### App-specific
