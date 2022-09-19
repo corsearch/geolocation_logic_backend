@@ -6,3 +6,8 @@ zipfile36
 pickle5
 defusedcsv
 ptvsd
+
+sqlmodel
+psycopg==3.0b1
+
+pytest

@@ -1,7 +1,7 @@
 # test_with_pytest.py
 import time
 from geocode import Geocoder
-from fake_data import addresses
+from test_data import addresses
 
 
 def test_content_parser():
