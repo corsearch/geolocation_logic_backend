@@ -1,4 +1,4 @@
-<h1> Backend Logic Geolocation </h1>
+<h1> Backend Logic Geolocation "version DB" </h1>
 
 This repo is for  the Python module plugged behind the gelocation service.
 It is python code that parses  and processes addresses. The processed addresses are then send a to third part for geolocation.
@@ -17,7 +17,7 @@ option 1 :   first time you run the  the code
         it can last a couple of minutes. The data ingestion process is finished when you  can  read : "Populating DB finished "
 
 option 2 :  otherwise
-        - !!!!  docker compose up  to start the db 
+        - !!!!  docker compose up  to start the db
 
 - make sure to have the dependencies with   : pip install -r requierements.py
 - run the code with default arguments  with  : python3 main.py
