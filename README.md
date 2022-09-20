@@ -14,7 +14,7 @@ then send a to third part for geolocation.
 <h2> Get started </h2>
 
 option 1 :  Is it the first time you run the  the code ? then follow below.
-- download the [raw data files](https://drive.google.com/file/d/1XuU5QYCa84KzooJ7Kt1MbNT0cxZ1_Zd-/view?usp=sharing)
+- download the [raw data files](https://drive.google.com/file/d/1XuU5QYCa84KzooJ7Kt1MbNT0cxZ1_Zd-/view?usp=sharing) . Source for postal_code: https://www.geonames.org/
 -  unzip and place the folder in /populate_data
 - from the  folder  /populate_data  run  the bash script:
         ./set_db_data.sh
@@ -29,6 +29,7 @@ option 2 :  Otherwise
 
 After option 1 or 2
 - make sure to have the dependencies with   : pip install -r requierements.py
+- ask for secret  API key to remi.toudic@cosearch.com
 - By now you  should be able to run the code with default arguments  with  : python3 main.py
 
 
