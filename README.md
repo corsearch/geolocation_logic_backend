@@ -14,6 +14,8 @@ then send a to third part for geolocation.
 <h2> Get started </h2>
 
 option 1 :  Is it the first time you run the  the code ? then follow below.
+- download the [raw data files](https://drive.google.com/file/d/1XuU5QYCa84KzooJ7Kt1MbNT0cxZ1_Zd-/view?usp=sharing)
+-  unzip and place the folder in /populate_data
 - from the  folder  /populate_data  run  the bash script:
         ./set_db_data.sh
 
