@@ -28,15 +28,14 @@ class Country(SQLModel, table=True):
     language_code: Optional[int] = None
     country_name: str
 
+
 class BoundingBox(SQLModel, table=True):
     # https://github.com/tiangolo/sqlmodel/issues/178
     id: Optional[int] = Field(default=None, primary_key=True)
     country_code: str
     postal_code: str
     BoundingBox: List[float] = Field(sa_column=Column(JSON))
-    
+
     # Needed for Column(JSON)
     class Config:
         arbitrary_types_allowed = True
-
-

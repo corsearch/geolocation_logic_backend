@@ -1,14 +1,15 @@
 from models import Country, PostalCcode
 import pycountry
 from typing import List
-from models import Country,BoundingBox,PostalCcode
+from models import Country, BoundingBox, PostalCcode
 import pandas as pd
-from sqlmodel import Session, create_engine, select,SQLModel
+from sqlmodel import Session, create_engine, select, SQLModel
 import time
 
 # sqlite_url = f"sqlite:///{sqlite_file_name}"
 postgres_url = "postgresql://remi:pwd@localhost:5432/geolocation_data"
 engine = create_engine(postgres_url, echo=False)
+
 
 def populate_postalcode():
     with Session(engine) as session:
@@ -30,7 +31,7 @@ def populate_postalcode():
                     admin_code2=data[6],
                     admin_name3=data[7],
                     admin_code3=data[8],
-                    latitude= str(data[9]),
+                    latitude=str(data[9]),
                     longitude=str(data[10]),
                     accuracy=data[11],
                 )
@@ -44,6 +45,7 @@ def populate_postalcode():
                     counter = 0
 
         session.commit()
+
 
 def populate_country():
     with Session(engine) as session:
@@ -63,6 +65,7 @@ def populate_country():
                     session.add(country)
                     session.commit()
 
+
 def add_pycountry_to_countries_db():
     potential_country_to_add = C = list(pycountry.countries)
     with Session(engine) as session:
@@ -75,7 +78,7 @@ def add_pycountry_to_countries_db():
                 country = Country(
                     name=country_.name.lower(),
                     country_code=country_.alpha_2,
-                    language=data[2],
+                    language=country_.name.lower(),
                     country_name=country_.name.lower(),
                     language_code="English",
                 )
@@ -99,29 +102,35 @@ def populate_bbox():
         """
     with Session(engine) as session:
         results = session.execute(statement)
-        results= results.fetchall()
+        results = results.fetchall()
 
-        df  = pd.DataFrame(results)
+        df = pd.DataFrame(results)
         df['to be corrected'] = df['max_long'].eq(df['min_long'])
-        BBox =   df[["id" , 'postal_code',"country_code" ,'to be corrected','min_long', 'max_long','min_lat', 'max_lat']]
+        BBox = df[["id", 'postal_code', "country_code", 'to be corrected',
+                   'min_long', 'max_long', 'min_lat', 'max_lat']]
 
         # to correct
         BBox_to_correct = BBox.loc[BBox['to be corrected'] == True]
-        BBox_to_correct["max_lat"] = BBox_to_correct["max_lat"]+0.005  #  555 meters translation
-        BBox_to_correct["max_long"] = BBox_to_correct["max_long"]+0.005  #  555 meters translation
+        BBox_to_correct["max_lat"] = BBox_to_correct["max_lat"] + \
+            0.005  # 555 meters translation
+        # 555 meters translation
+        BBox_to_correct["max_long"] = BBox_to_correct["max_long"]+0.005
         BBox_to_correct.reset_index()
-        
+
         #  original
         BBox_original = BBox.loc[BBox['to be corrected'] == False]
 
         def commit_df(df):
             counter = 0
             for index, row in df.iterrows():
-                session.add(BoundingBox( country_code = row["country_code"],
-                                    postal_code = row["postal_code"],
-                                    BoundingBox = [row["min_long"], row["max_long"],row["min_lat"],row["max_lat"]]))
+                session.add(BoundingBox(country_code=row["country_code"],
+                                        postal_code=row["postal_code"],
+                                        BoundingBox=[row["min_long"],
+                                                     row["max_long"],
+                                                     row["min_lat"],
+                                                     row["max_lat"]]))
 
-                counter =counter +1
+                counter = counter + 1
                 if counter > 1000:
                     session.commit()
                     counter = 0
@@ -131,14 +140,11 @@ def populate_bbox():
         commit_df(BBox_original)
 
 
-
-
-
 if __name__ == '__main__':
-    print( "Populating DB staarted"   )
-    print( "######################"   )
-    print ( " !!! it can last 2-4 min !!!" )
-    print( "######################"   )
+    print("Populating DB staarted")
+    print("######################")
+    print(" !!! it can last 2-4 min !!!")
+    print("######################")
     time.sleep(3)
 
     populate_postalcode()
@@ -147,7 +153,4 @@ if __name__ == '__main__':
     add_pycountry_to_countries_db()
     populate_bbox()
 
-    print( "Populating DB finished "   )
-
-
-
+    print("Populating DB finished ")

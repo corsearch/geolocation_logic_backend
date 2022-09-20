@@ -13,10 +13,8 @@ import locationiq
 import pycountry
 from rtree import index
 import time
-from locationiq.rest import ApiException
-from typing import Optional
-from populate_data.models import  BoundingBox
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from populate_data.models import BoundingBox
+from sqlmodel import Field, Session, create_engine, select
 
 
 # from .lib_platformX.utils import jaccard_similarity
@@ -316,9 +314,9 @@ class Geocoder:
                     )
 
                     kwargs.update({"q": candidate_streeet})
-                    print("##########")
-                    print(kwargs)
-                    print("##########")
+                    # print("##########")
+                    # print(kwargs)
+                    # print("##########")
                     try:
                         response = api_instance.search(**kwargs)
                         break
@@ -340,7 +338,7 @@ class GeoData:
     @lru_cache(maxsize=10)
     def get_country_data(_day):
         # unpack country names with 2 letters
-        res= {country.alpha_2: country.name for country in pycountry.countries}
+        res = {country.alpha_2: country.name for country in pycountry.countries}
         return res
 
     @staticmethod
@@ -691,9 +689,10 @@ class AddressMatcher:
             query = select(Country).where(
                 Country.name == candidate)
             results = session.exec(query)
+            results = results.first()
 
-        if results.first() is not None:
-            return results.name
+            if results is not None:
+                return results.name
 
         # match = GeoData.get_country_names_data(date.today()).get(candidate.lower())
         # if match:
@@ -714,7 +713,7 @@ class AddressMatcher:
     def match_us_state_code(candidate):
         try:
             pass
-            state = ""  # quick fix flake8
+            # state = ""  # quick fix flake8
             # state = us.states.lookup(candidate.upper())
             return "US"
         except BaseException:
@@ -905,7 +904,8 @@ class AddressMatcher:
 
     def get_bounding_box(self):
 
-        postal_code_normalised = self.address["postal_code"]["value"].upper().replace(" ", "")
+        postal_code_normalised = self.address["postal_code"]["value"].upper().replace(
+            " ", "")
         country_code = self.address["country_code"]["value"]
 
         if not postal_code_normalised or not country_code:
@@ -913,10 +913,10 @@ class AddressMatcher:
 
         with Session(engine) as session:
             statement = select(BoundingBox).where(
-                                                    BoundingBox.country_code ==country_code ).where(
-                                                    BoundingBox.postal_code == postal_code_normalised)
+                BoundingBox.country_code == country_code).where(
+                BoundingBox.postal_code == postal_code_normalised)
             result = session.exec(statement).first()
-        
+
         if not result:
             return None
         # (
@@ -966,7 +966,7 @@ class AddressMatcher:
         #     centroid[0] + long_offset,
         #     centroid[1] + lat_offset,
         # )
-        self.address["bounding_box"]["value"] =  result.BoundingBox
+        self.address["bounding_box"]["value"] = result.BoundingBox
         self.address["bounding_box"]["indexes"] = []
 
     def match(self):

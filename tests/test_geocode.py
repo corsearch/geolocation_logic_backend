@@ -1,6 +1,6 @@
 # test_with_pytest.py
 import time
-from ..geocode import *
+from geocode import *
 
 test_address = ("Andreas Bünnecke Dreimorgenstück 11 Weilburg Hessen 35781 DE",
                 "PBSHOP.CO.UK LTD Unit 22, Horcott Industrial Estate," +
