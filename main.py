@@ -1,6 +1,7 @@
 import time
 from geocode import Geocoder
 from test_data import addresses
+from xport_to_zero import formating
 
 
 def call_API():
@@ -13,6 +14,7 @@ def call_API():
         print("############")
         print(C, " - Search for:", address_data["address"])
         result = Geocoder.geocode(address_data["address"])
+        result = formating(result)
         data.append(result)
         # time.sleep(1)
     # result= Geocoder.geocode("AMAZON UK SERVICES LTD 1 PRINCIPAL PLACE"+
