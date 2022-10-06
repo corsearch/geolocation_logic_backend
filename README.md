@@ -19,8 +19,8 @@ option 1 :  Is it the first time you run the  the code ? then follow below.
 - from the  folder  /populate_data  run  the bash script:
         ./set_db_data.sh
 
-this script is to ingest the necessary input data in the db.
-it can last a couple of minutes.
+this script create a Postgres DB to ingest the necessary input data.
+It can last a couple of minutes.
 The data ingestion process is finished
 when you  can  read : "Populating DB finished "
 
